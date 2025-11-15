@@ -14,6 +14,7 @@ export const createUser = async (req: Request, res: Response) => {
 export const updateUser = async (req: Request, res: Response) => {
   try {
     const id = req.params.id;
+
     const user = await userService.updateUser(id, req.body);
     res.json({ data: user, message: "User updated successfully" });
   } catch (err: any) {
