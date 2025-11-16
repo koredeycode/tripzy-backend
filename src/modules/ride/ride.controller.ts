@@ -20,3 +20,5 @@ export const getRide = async (req: Request, res: Response) => {
     res.status(err.statusCode || 500).json({ error: err.message });
   }
 };
+
+//TODO  delete Ride

@@ -34,3 +34,28 @@ export const getDrivers = async (): Promise<Driver[]> => {
     throw new AppError("Failed to fetch drivers", 500);
   }
 };
+
+export const getDriver = async (id: string): Promise<Driver> => {
+  if (!id) throw new AppError("Missing driver ID", 400);
+
+  try {
+    const response = await sql`
+      SELECT
+        id,
+        first_name,
+        last_name,
+        profile_image_url,
+        car_image_url,
+        car_seats,
+        rating
+      FROM drivers
+      WHERE id = ${id}
+      LIMIT 1;
+    `;
+    if (response.length === 0) throw new AppError("Ride not found", 404);
+
+    return response[0] as Driver;
+  } catch (err) {
+    throw new AppError("Failed to fetch driver", 500);
+  }
+};
