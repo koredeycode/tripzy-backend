@@ -10,11 +10,12 @@ export interface User {
   last_name: string;
   email: string;
   password_hash?: string;
+  profile_image_url?: string;
   is_driver?: boolean;
 }
 
 export const signup = async (data: Partial<User>) => {
-  const { first_name, last_name, email, password_hash } = data;
+  const { first_name, last_name, email, password_hash, profile_image_url } = data;
 
   if (!first_name || !last_name || !email || !password_hash) {
     throw new AppError('Missing required fields', 400);
@@ -31,8 +32,8 @@ export const signup = async (data: Partial<User>) => {
 
   // Create user
   const newUser = await query(
-    'INSERT INTO users (first_name, last_name, email, password_hash) VALUES ($1, $2, $3, $4) RETURNING id, first_name, last_name, email',
-    [first_name, last_name, email, hashed]
+    'INSERT INTO users (first_name, last_name, email, password_hash, profile_image_url) VALUES ($1, $2, $3, $4, $5) RETURNING id, first_name, last_name, email, profile_image_url',
+    [first_name, last_name, email, hashed, profile_image_url]
   );
 
   const user = newUser.rows[0];
@@ -81,7 +82,7 @@ export const login = async (data: { email: string; password: string }) => {
 };
 
 export const getProfile = async (userId: string) => {
-  const result = await query('SELECT id, first_name, last_name, email FROM users WHERE id = $1', [userId]);
+  const result = await query('SELECT id, first_name, last_name, email, profile_image_url FROM users WHERE id = $1', [userId]);
   if (result.rows.length === 0) {
     throw new AppError('User not found', 404);
   }

@@ -4,8 +4,8 @@ import * as authService from './auth.service';
 
 export const signup = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const { first_name, last_name, email, password } = req.body;
-    const result = await authService.signup({ first_name, last_name, email, password_hash: password });
+    const { first_name, last_name, email, password, profile_image_url } = req.body;
+    const result = await authService.signup({ first_name, last_name, email, password_hash: password, profile_image_url });
     res.status(201).json(result);
   } catch (error) {
     next(error);

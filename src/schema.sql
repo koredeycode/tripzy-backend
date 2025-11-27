@@ -7,13 +7,13 @@ CREATE TABLE users (
     last_name VARCHAR(50) NOT NULL,
     email VARCHAR(100) UNIQUE NOT NULL,
     password_hash TEXT NOT NULL,
+    profile_image_url TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE drivers (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     user_id UUID UNIQUE NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    profile_image_url TEXT,
     car_image_url TEXT, 
     car_seats INTEGER NOT NULL CHECK (car_seats > 0),
     rating DECIMAL(3, 2) CHECK (rating >= 0 AND rating <= 5),

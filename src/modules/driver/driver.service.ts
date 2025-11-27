@@ -17,14 +17,16 @@ export const getDrivers = async (): Promise<Driver[]> => {
   try {
     const result = await query(
       `SELECT
-        id,
-        first_name,
-        last_name,
-        profile_image_url,
-        car_image_url,
-        car_seats,
-        rating
-      FROM drivers`
+        drivers.id,
+        drivers.user_id,
+        drivers.car_image_url,
+        drivers.car_seats,
+        drivers.rating,
+        users.first_name,
+        users.last_name,
+        users.profile_image_url
+      FROM drivers
+      JOIN users ON drivers.user_id = users.id`
     );
     return result.rows as Driver[];
   } catch (err) {
@@ -38,16 +40,17 @@ export const getDriver = async (id: string): Promise<Driver> => {
   try {
     const result = await query(
       `SELECT
-        id,
-        first_name,
-        last_name,
-        profile_image_url,
-        car_image_url,
-        car_seats,
-        rating
+        drivers.id,
+        drivers.user_id,
+        drivers.car_image_url,
+        drivers.car_seats,
+        drivers.rating,
+        users.first_name,
+        users.last_name,
+        users.profile_image_url
       FROM drivers
-      WHERE id = $1
-      LIMIT 1`,
+      JOIN users ON drivers.user_id = users.id
+      WHERE drivers.id = $1`,
       [id]
     );
     if (result.rows.length === 0) throw new AppError("Driver not found", 404);

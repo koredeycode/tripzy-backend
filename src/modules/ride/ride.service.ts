@@ -110,13 +110,14 @@ export const getRide = async (id: string): Promise<Ride> => {
           'driver_id', drivers.id,
           'first_name', drivers.first_name,
           'last_name', drivers.last_name,
-          'profile_image_url', drivers.profile_image_url,
+          'profile_image_url', users.profile_image_url,
           'car_image_url', drivers.car_image_url,
           'car_seats', drivers.car_seats,
           'rating', drivers.rating
         ) AS driver
       FROM rides
       INNER JOIN drivers ON rides.driver_id = drivers.id
+      INNER JOIN users ON drivers.user_id = users.id
       WHERE rides.ride_id = $1
       LIMIT 1`,
       [id]
