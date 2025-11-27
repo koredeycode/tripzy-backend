@@ -8,7 +8,8 @@
     "build": "tsc",
     "start": "node dist/server.js",
     "test": "jest",
-    "seed": "ts-node scripts/seed.ts"
+    "seed": "ts-node scripts/seed.ts",
+    "clean": "rm -rf dist && find src -name '*.js' -type f -delete && find src -name '*.js.map' -type f -delete"
   },
   "keywords": [],
   "author": "",
@@ -30,6 +31,8 @@
     "typescript": "^5.9.3"
   },
   "dependencies": {
+    "@types/swagger-jsdoc": "^6.0.4",
+    "@types/swagger-ui-express": "^4.1.8",
     "argon2": "^0.44.0",
     "cors": "^2.8.5",
     "dotenv": "^17.2.3",
@@ -37,6 +40,8 @@
     "jsonwebtoken": "^9.0.2",
     "pg": "^8.16.3",
     "stripe": "^19.3.1",
+    "swagger-jsdoc": "^6.2.8",
+    "swagger-ui-express": "^5.0.1",
     "uuid": "^13.0.0"
   }
 }

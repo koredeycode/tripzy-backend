@@ -22,7 +22,13 @@ app.use(cors());
 app.use(requestLogger);
 
 // Main router
+// Main router
 app.use("/api", router);
+
+// Swagger UI
+import swaggerUi from 'swagger-ui-express';
+import { swaggerSpec } from './config/swagger';
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 app.use(errorHandler);
 
