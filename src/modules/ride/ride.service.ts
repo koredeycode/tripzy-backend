@@ -1,5 +1,5 @@
-// src/modules/ride/ride.service.ts
 import { query } from "../../db";
+import { addEmailJob } from '../../jobs/queues/email.queue';
 import { AppError } from "../../middlewares/error.middleware";
 
 export interface Ride {
@@ -82,7 +82,21 @@ export const createRide = async (data: Partial<Ride>): Promise<Ride> => {
       ]
     );
 
-    return result.rows[0] as Ride;
+    const ride = result.rows[0] as Ride;
+
+    // Fetch user email to send notification
+    const userRes = await query('SELECT email, first_name FROM users WHERE id = $1', [user_id]);
+    if (userRes.rows.length > 0) {
+      const user = userRes.rows[0];
+      await addEmailJob('ride_booking', {
+        to: user.email,
+        subject: 'Ride Booked!',
+        text: `Hi ${user.first_name}, your ride from ${origin_address} to ${destination_address} has been booked.`,
+        html: `<p>Hi ${user.first_name},</p><p>Your ride from <strong>${origin_address}</strong> to <strong>${destination_address}</strong> has been booked.</p>`,
+      });
+    }
+
+    return ride;
   } catch (err) {
     throw new AppError("Failed to create ride", 500);
   }

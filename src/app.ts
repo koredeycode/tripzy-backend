@@ -18,8 +18,11 @@ app.use((req, res, next) => {
   }
 });
 
+import { globalLimiter } from "./middleware/rateLimitMiddleware";
+
 app.use(cors());
 app.use(requestLogger);
+app.use(globalLimiter);
 
 // Main router
 // Main router

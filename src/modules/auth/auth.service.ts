@@ -2,6 +2,7 @@ import argon2 from 'argon2';
 import jwt from 'jsonwebtoken';
 import { env } from '../../config/env';
 import { query } from '../../db';
+import { addEmailJob } from '../../jobs/queues/email.queue';
 import { AppError } from '../../middlewares/error.middleware';
 
 export interface User {
@@ -40,6 +41,14 @@ export const signup = async (data: Partial<User>) => {
 
   // Generate token
   const token = jwt.sign({ userId: user.id, role: 'user' }, env.JWT_SECRET, { expiresIn: '7d' });
+
+  // Dispatch email job
+  await addEmailJob('signup', {
+    to: user.email,
+    subject: 'Welcome to Tripzy!',
+    text: `Hi ${user.first_name}, welcome to Tripzy! We are excited to have you on board.`,
+    html: `<h1>Hi ${user.first_name},</h1><p>Welcome to Tripzy! We are excited to have you on board.</p>`,
+  });
 
   return { user, token };
 };

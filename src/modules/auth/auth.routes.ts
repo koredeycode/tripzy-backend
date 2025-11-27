@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { authenticateToken } from '../../middleware/authMiddleware';
+import { authLimiter } from '../../middleware/rateLimitMiddleware';
 import * as authController from './auth.controller';
 
 const router = Router();
@@ -38,7 +39,7 @@ const router = Router();
  *       400:
  *         description: User already exists or missing fields
  */
-router.post('/signup', authController.signup);
+router.post('/signup', authLimiter, authController.signup);
 
 /**
  * @swagger
@@ -66,7 +67,7 @@ router.post('/signup', authController.signup);
  *       400:
  *         description: Invalid credentials
  */
-router.post('/login', authController.login);
+router.post('/login', authLimiter, authController.login);
 
 /**
  * @swagger
