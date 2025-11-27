@@ -4,6 +4,7 @@ import { env } from '../../config/env';
 import { query } from '../../db';
 import { addEmailJob } from '../../jobs/queues/email.queue';
 import { AppError } from '../../middlewares/error.middleware';
+import { getWelcomeEmail } from '../../utils/emailTemplates';
 
 export interface User {
   id: string;
@@ -47,7 +48,7 @@ export const signup = async (data: Partial<User>) => {
     to: user.email,
     subject: 'Welcome to Tripzy!',
     text: `Hi ${user.first_name}, welcome to Tripzy! We are excited to have you on board.`,
-    html: `<h1>Hi ${user.first_name},</h1><p>Welcome to Tripzy! We are excited to have you on board.</p>`,
+    html: getWelcomeEmail(user.first_name),
   });
 
   return { user, token };

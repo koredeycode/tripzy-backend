@@ -32,6 +32,10 @@ app.use("/api", router);
 import swaggerUi from 'swagger-ui-express';
 import { swaggerSpec } from './config/swagger';
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+app.get('/api-docs.json', (req, res) => {
+  res.setHeader('Content-Type', 'application/json');
+  res.send(swaggerSpec);
+});
 
 app.use(errorHandler);
 

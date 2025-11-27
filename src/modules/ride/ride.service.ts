@@ -1,6 +1,7 @@
 import { query } from "../../db";
 import { addEmailJob } from '../../jobs/queues/email.queue';
 import { AppError } from "../../middlewares/error.middleware";
+import { getRideBookingEmail } from '../../utils/emailTemplates';
 
 export interface Ride {
   ride_id: string;
@@ -76,7 +77,7 @@ export const createRide = async (data: Partial<Ride>): Promise<Ride> => {
         to: user.email,
         subject: 'Ride Booked!',
         text: `Hi ${user.first_name}, your ride from ${origin_address} to ${destination_address} has been booked.`,
-        html: `<p>Hi ${user.first_name},</p><p>Your ride from <strong>${origin_address}</strong> to <strong>${destination_address}</strong> has been booked.</p>`,
+        html: getRideBookingEmail(user.first_name, origin_address || '', destination_address || ''),
       });
     }
 
