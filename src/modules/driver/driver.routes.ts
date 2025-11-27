@@ -1,9 +1,13 @@
 import { Router } from "express";
-import { getDrivers, getDriver } from "./driver.controller";
+import { authenticateToken } from "../../middleware/authMiddleware";
+import {
+    getDriver,
+    getDrivers
+} from "./driver.controller";
 
 const router = Router();
 
-router.get("/", getDrivers);
-router.get("/:id", getDriver);
+router.get("/", authenticateToken, getDrivers);
+router.get("/:id", authenticateToken, getDriver);
 
 export default router;

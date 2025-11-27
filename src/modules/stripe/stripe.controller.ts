@@ -1,14 +1,21 @@
 import { Request, Response } from "express";
 import Stripe from "stripe";
 import { env } from "../../config/env";
+import { AuthRequest } from "../../middleware/authMiddleware";
 import { createOrGetConversation } from "../chat/chat.service";
 import { createRide } from "../ride/ride.service";
 import * as stripeService from "./stripe.service";
 import { stripe } from "./stripe.service";
 
-export const createPaymentIntent = async (req: Request, res: Response) => {
+export const createPaymentIntent = async (req: AuthRequest, res: Response) => {
   try {
-    const result = await stripeService.createPaymentIntent(req.body);
+    const userId = req.user?.userId;
+    if (!userId) {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+
+    const data = { ...req.body, user_id: userId };
+    const result = await stripeService.createPaymentIntent(data);
     res.status(201).json({ data: result, message: "Payment intent created" });
   } catch (err: any) {
     res.status(err.statusCode || 500).json({ error: err.message });
@@ -63,18 +70,18 @@ export const handleWebhook = async (req: Request, res: Response) => {
           origin_longitude: parseFloat(origin_longitude),
           destination_latitude: parseFloat(destination_latitude),
           destination_longitude: parseFloat(destination_longitude),
-          ride_time,
+          ride_time: parseInt(ride_time),
           fare_price: paymentIntent.amount / 100,
           payment_status: "paid",
-          driver_id: parseInt(driver_id),
-          user_id: parseInt(user_id),
+          driver_id: driver_id,
+          user_id: user_id,
         });
 
         console.log("Ride created:", ride.ride_id);
 
         const conversation = await createOrGetConversation(
-          parseInt(user_id),
-          parseInt(driver_id)
+          user_id,
+          driver_id
         );
 
         console.log("Conversation created:", conversation.id);

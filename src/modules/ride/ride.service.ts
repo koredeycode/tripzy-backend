@@ -1,21 +1,19 @@
 // src/modules/ride/ride.service.ts
-import { neon } from "@neondatabase/serverless";
+import { query } from "../../db";
 import { AppError } from "../../middlewares/error.middleware";
 
-const sql = neon(process.env.DATABASE_URL!);
-
 export interface Ride {
-  ride_id: number;
+  ride_id: string;
   origin_address: string;
   destination_address: string;
   origin_latitude: number;
   origin_longitude: number;
   destination_latitude: number;
   destination_longitude: number;
-  ride_time: string;
+  ride_time: number;
   fare_price: number;
   payment_status: string;
-  driver_id: number;
+  driver_id: string;
   user_id: string;
   created_at: string;
   driver?: object;
@@ -54,8 +52,8 @@ export const createRide = async (data: Partial<Ride>): Promise<Ride> => {
   }
 
   try {
-    const response = await sql`
-      INSERT INTO rides (
+    const result = await query(
+      `INSERT INTO rides (
         origin_address,
         destination_address,
         origin_latitude,
@@ -67,23 +65,24 @@ export const createRide = async (data: Partial<Ride>): Promise<Ride> => {
         payment_status,
         driver_id,
         user_id
-      ) VALUES (
-        ${origin_address},
-        ${destination_address},
-        ${origin_latitude},
-        ${origin_longitude},
-        ${destination_latitude},
-        ${destination_longitude},
-        ${ride_time},
-        ${fare_price},
-        ${payment_status},
-        ${driver_id},
-        ${user_id}
-      )
-      RETURNING *;
-    `;
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+      RETURNING *`,
+      [
+        origin_address,
+        destination_address,
+        origin_latitude,
+        origin_longitude,
+        destination_latitude,
+        destination_longitude,
+        ride_time,
+        fare_price,
+        payment_status,
+        driver_id,
+        user_id,
+      ]
+    );
 
-    return response[0] as Ride;
+    return result.rows[0] as Ride;
   } catch (err) {
     throw new AppError("Failed to create ride", 500);
   }
@@ -94,8 +93,8 @@ export const getRide = async (id: string): Promise<Ride> => {
   if (!id) throw new AppError("Missing ride ID", 400);
 
   try {
-    const response = await sql`
-      SELECT
+    const result = await query(
+      `SELECT
         rides.ride_id,
         rides.origin_address,
         rides.destination_address,
@@ -118,14 +117,16 @@ export const getRide = async (id: string): Promise<Ride> => {
         ) AS driver
       FROM rides
       INNER JOIN drivers ON rides.driver_id = drivers.id
-      WHERE rides.ride_id = ${id}
-      LIMIT 1;
-    `;
+      WHERE rides.ride_id = $1
+      LIMIT 1`,
+      [id]
+    );
 
-    if (response.length === 0) throw new AppError("Ride not found", 404);
+    if (result.rows.length === 0) throw new AppError("Ride not found", 404);
 
-    return response[0] as Ride;
+    return result.rows[0] as Ride;
   } catch (err) {
+    if (err instanceof AppError) throw err;
     throw new AppError("Failed to fetch ride", 500);
   }
 };

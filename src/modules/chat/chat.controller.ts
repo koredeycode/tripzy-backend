@@ -1,6 +1,6 @@
+// src/modules/chat/chat.controller.ts
 import { NextFunction, Request, Response } from "express";
 import { AppError } from "../../middlewares/error.middleware";
-import { getUserByClerkId } from "../user/user.service";
 import * as chatService from "./chat.service";
 
 export const createConversation = async (
@@ -14,13 +14,7 @@ export const createConversation = async (
       throw new AppError("userId and driverId are required", 400);
     }
 
-    // Resolve clerk_id (userId) to internal id
-    const user = await getUserByClerkId(userId);
-    if (!user) {
-        throw new AppError("User not found", 404);
-    }
-
-    const conversation = await chatService.createOrGetConversation(user.id, driverId);
+    const conversation = await chatService.createOrGetConversation(userId, driverId);
     res.status(200).json(conversation);
   } catch (error) {
     next(error);
@@ -38,20 +32,10 @@ export const sendMessage = async (
       throw new AppError("Missing required fields", 400);
     }
 
-    let internalSenderId = senderId;
-
-    if (senderType === 'user') {
-        const user = await getUserByClerkId(senderId);
-        if (!user) {
-            throw new AppError("User not found", 404);
-        }
-        internalSenderId = user.id;
-    }
-
     const message = await chatService.sendMessage(
       conversationId,
       senderType,
-      internalSenderId,
+      senderId,
       messageText,
       imageUrl
     );
@@ -70,14 +54,10 @@ export const getConversations = async (
     const { userId, driverId } = req.query;
     
     if (userId) {
-        const user = await getUserByClerkId(userId as string);
-        if (!user) {
-            throw new AppError("User not found", 404);
-        }
-        const conversations = await chatService.getUserConversations(user.id);
+        const conversations = await chatService.getUserConversations(userId as string);
         res.status(200).json(conversations);
     } else if (driverId) {
-        const conversations = await chatService.getDriverConversations(Number(driverId));
+        const conversations = await chatService.getDriverConversations(driverId as string);
         res.status(200).json(conversations);
     } else {
         throw new AppError("userId or driverId query param required", 400);
@@ -94,7 +74,7 @@ export const getMessages = async (
 ) => {
   try {
     const { conversationId } = req.params;
-    const messages = await chatService.getMessages(Number(conversationId));
+    const messages = await chatService.getMessages(conversationId);
     res.status(200).json(messages);
   } catch (error) {
     next(error);
@@ -125,11 +105,7 @@ export const getUnreadCount = async (
 ) => {
     try {
         const { userId } = req.params;
-        const user = await getUserByClerkId(userId);
-        if (!user) {
-            throw new AppError("User not found", 404);
-        }
-        const count = await chatService.getUserUnreadCount(user.id);
+        const count = await chatService.getUserUnreadCount(userId);
         res.status(200).json({ count });
     } catch (error) {
         next(error);

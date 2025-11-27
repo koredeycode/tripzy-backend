@@ -1,15 +1,13 @@
 import { Router } from "express";
+import { authenticateToken, authorizeUser } from "../../middleware/authMiddleware";
 import {
-  createUser,
-  getUserRides,
-  updateUser
+    getUserRides,
+    updateUser
 } from "./user.controller";
 
 const router = Router();
 
-router.post("/", createUser);
-router.put("/:id", updateUser);
-// router.get("/:clerk_id", getUserByClerkId);
-router.get("/:id/rides", getUserRides);
+router.put("/:id", authenticateToken, authorizeUser, updateUser);
+router.get("/:id/rides", authenticateToken, authorizeUser, getUserRides);
 
 export default router;

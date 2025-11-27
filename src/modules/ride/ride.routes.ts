@@ -1,9 +1,13 @@
 import { Router } from "express";
-import { createRide, getRide } from "./ride.controller";
+import { authenticateToken, authorizeRideAccess } from "../../middleware/authMiddleware";
+import {
+    createRide,
+    getRide
+} from "./ride.controller";
 
 const router = Router();
 
-router.post("/", createRide);
-router.get("/:id", getRide);
+router.post("/", authenticateToken, createRide);
+router.get("/:id", authenticateToken, authorizeRideAccess, getRide);
 
 export default router;

@@ -18,8 +18,8 @@ interface CreatePaymentIntentInput {
   destination_latitude: number;
   destination_longitude: number;
   ride_time: string;
-  driver_id: number;
-  user_id: number;
+  driver_id: string;
+  user_id: string;
 }
 
 export const createPaymentIntent = async (data: CreatePaymentIntentInput) => {
@@ -87,8 +87,8 @@ export const createPaymentIntent = async (data: CreatePaymentIntentInput) => {
         destination_latitude: destination_latitude.toString(),
         destination_longitude: destination_longitude.toString(),
         ride_time,
-        driver_id: driver_id.toString(),
-        user_id: user_id.toString(),
+        driver_id,
+        user_id,
       },
     });
   } catch (err) {
