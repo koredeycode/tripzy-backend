@@ -30,6 +30,18 @@ export const createUser = async (data: Partial<User>): Promise<User> => {
   return result[0] as User;
 };
 
+//Get a user by clerk_id
+export const getUserByClerkId = async (
+  clerk_id: string
+): Promise<User | null> => {
+  const result = await sql`
+    SELECT * FROM users WHERE clerk_id = ${clerk_id};
+  `;
+
+  if (result.length === 0) return null;
+  return result[0] as User;
+};
+
 // Update a user
 export const updateUser = async (
   id: string,
