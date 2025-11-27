@@ -11,10 +11,32 @@ interface CreatePaymentIntentInput {
   name: string;
   email: string;
   amount: number;
+  origin_address: string;
+  destination_address: string;
+  origin_latitude: number;
+  origin_longitude: number;
+  destination_latitude: number;
+  destination_longitude: number;
+  ride_time: string;
+  driver_id: number;
+  user_id: number;
 }
 
 export const createPaymentIntent = async (data: CreatePaymentIntentInput) => {
-  const { name, email, amount } = data;
+  const {
+    name,
+    email,
+    amount,
+    origin_address,
+    destination_address,
+    origin_latitude,
+    origin_longitude,
+    destination_latitude,
+    destination_longitude,
+    ride_time,
+    driver_id,
+    user_id,
+  } = data;
 
   // Validation
   if (!name || !email || !amount) {
@@ -56,6 +78,17 @@ export const createPaymentIntent = async (data: CreatePaymentIntentInput) => {
       automatic_payment_methods: {
         enabled: true,
         allow_redirects: "never",
+      },
+      metadata: {
+        origin_address,
+        destination_address,
+        origin_latitude: origin_latitude.toString(),
+        origin_longitude: origin_longitude.toString(),
+        destination_latitude: destination_latitude.toString(),
+        destination_longitude: destination_longitude.toString(),
+        ride_time,
+        driver_id: driver_id.toString(),
+        user_id: user_id.toString(),
       },
     });
   } catch (err) {

@@ -69,7 +69,7 @@ SELECT
     m.sender_type,
     m.sender_id,
     m.message_text,
-   142    m.image_url,
+    m.image_url,
     m.message_type,
     m.is_read,
     m.created_at

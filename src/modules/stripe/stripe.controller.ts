@@ -1,6 +1,8 @@
 import { Request, Response } from "express";
 import Stripe from "stripe";
 import { env } from "../../config/env";
+import { createOrGetConversation } from "../chat/chat.service";
+import { createRide } from "../ride/ride.service";
 import * as stripeService from "./stripe.service";
 import { stripe } from "./stripe.service";
 
@@ -40,7 +42,45 @@ export const handleWebhook = async (req: Request, res: Response) => {
     case "payment_intent.succeeded":
       const paymentIntent = event.data.object as Stripe.PaymentIntent;
       console.log("PaymentIntent was successful!", paymentIntent.id);
-      // TODO: Update ride payment status in DB
+
+      const {
+        origin_address,
+        destination_address,
+        origin_latitude,
+        origin_longitude,
+        destination_latitude,
+        destination_longitude,
+        ride_time,
+        driver_id,
+        user_id,
+      } = paymentIntent.metadata;
+
+      try {
+        const ride = await createRide({
+          origin_address,
+          destination_address,
+          origin_latitude: parseFloat(origin_latitude),
+          origin_longitude: parseFloat(origin_longitude),
+          destination_latitude: parseFloat(destination_latitude),
+          destination_longitude: parseFloat(destination_longitude),
+          ride_time,
+          fare_price: paymentIntent.amount / 100,
+          payment_status: "paid",
+          driver_id: parseInt(driver_id),
+          user_id: parseInt(user_id),
+        });
+
+        console.log("Ride created:", ride.ride_id);
+
+        const conversation = await createOrGetConversation(
+          parseInt(user_id),
+          parseInt(driver_id)
+        );
+
+        console.log("Conversation created:", conversation.id);
+      } catch (error) {
+        console.error("Error creating ride or conversation:", error);
+      }
       break;
     default:
       console.log(`Unhandled event type ${event.type}`);
