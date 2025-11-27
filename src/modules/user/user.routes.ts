@@ -1,9 +1,9 @@
 import { Router } from "express";
 import { authenticateToken, authorizeUser } from "../../middleware/authMiddleware";
-import {
-    getUserRides,
-    updateUser
-} from "./user.controller";
+import { validateResource } from "../../middleware/validateResource";
+import * as userController from "./user.controller";
+import { getUserRides } from "./user.controller";
+import { updateUserSchema } from "./user.schema";
 
 const router = Router();
 
@@ -37,9 +37,9 @@ const router = Router();
  *       200:
  *         description: User updated successfully
  *       403:
- *         description: Unauthorized
+ *         description: Forbidden
  */
-router.put("/:id", authenticateToken, authorizeUser, updateUser);
+router.put('/:id', authenticateToken, validateResource(updateUserSchema), userController.updateUser);
 
 /**
  * @swagger

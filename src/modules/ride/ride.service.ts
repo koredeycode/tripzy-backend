@@ -35,22 +35,6 @@ export const createRide = async (data: Partial<Ride>): Promise<Ride> => {
     user_id,
   } = data;
 
-  if (
-    !origin_address ||
-    !destination_address ||
-    origin_latitude === undefined ||
-    origin_longitude === undefined ||
-    destination_latitude === undefined ||
-    destination_longitude === undefined ||
-    !ride_time ||
-    fare_price === undefined ||
-    !payment_status ||
-    !driver_id ||
-    !user_id
-  ) {
-    throw new AppError("Missing required fields", 400);
-  }
-
   try {
     const result = await query(
       `INSERT INTO rides (

@@ -1,9 +1,8 @@
 import { Router } from "express";
-import { authenticateToken, authorizeRideAccess } from "../../middleware/authMiddleware";
-import {
-    createRide,
-    getRide
-} from "./ride.controller";
+import { authenticateToken } from "../../middleware/authMiddleware";
+import { validateResource } from "../../middleware/validateResource";
+import * as rideController from "./ride.controller";
+import { createRideSchema } from "./ride.schema";
 
 const router = Router();
 
@@ -56,10 +55,12 @@ const router = Router();
  *     responses:
  *       201:
  *         description: Ride created successfully
+ *       400:
+ *         description: Missing required fields
  *       401:
  *         description: Unauthorized
  */
-router.post("/", authenticateToken, createRide);
+router.post("/", authenticateToken, validateResource(createRideSchema), rideController.createRide);
 
 /**
  * @swagger
@@ -82,6 +83,6 @@ router.post("/", authenticateToken, createRide);
  *       403:
  *         description: Unauthorized
  */
-router.get("/:id", authenticateToken, authorizeRideAccess, getRide);
+router.get("/:id", authenticateToken, rideController.getRide);
 
 export default router;

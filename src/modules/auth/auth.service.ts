@@ -18,8 +18,8 @@ export interface User {
 export const signup = async (data: Partial<User>) => {
   const { first_name, last_name, email, password_hash, profile_image_url } = data;
 
-  if (!first_name || !last_name || !email || !password_hash) {
-    throw new AppError('Missing required fields', 400);
+  if (!password_hash) {
+    throw new AppError('Password is required', 400);
   }
 
   // Check if user exists

@@ -1,6 +1,8 @@
 import { Router } from "express";
 import { authenticateToken } from "../../middleware/authMiddleware";
+import { validateResource } from "../../middleware/validateResource";
 import { createPaymentIntent, handleWebhook } from "./stripe.controller";
+import { createPaymentIntentSchema } from "./stripe.schema";
 
 const router = Router();
 
@@ -43,7 +45,7 @@ const router = Router();
  *       401:
  *         description: Unauthorized
  */
-router.post("/create", authenticateToken, createPaymentIntent);
+router.post("/create", authenticateToken, validateResource(createPaymentIntentSchema), createPaymentIntent);
 
 /**
  * @swagger
