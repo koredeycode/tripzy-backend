@@ -7,6 +7,7 @@ interface EnvConfig {
   DATABASE_URL?: string;
   JWT_SECRET?: string;
   STRIPE_SECRET_KEY?: string;
+  STRIPE_WEBHOOK_SECRET?: string;
 }
 
 const getEnv = (key: string, fallback?: string) => {
@@ -23,4 +24,5 @@ export const env: EnvConfig = {
   DATABASE_URL: process.env.DATABASE_URL,
   JWT_SECRET: process.env.JWT_SECRET,
   STRIPE_SECRET_KEY: process.env.STRIPE_SECRET_KEY,
+  STRIPE_WEBHOOK_SECRET: process.env.STRIPE_WEBHOOK_SECRET,
 };

@@ -8,7 +8,14 @@ dotenv.config();
 
 const app = express();
 
-app.use(express.json());
+app.use("/api/stripe/webhook", express.raw({ type: "application/json" }));
+app.use((req, res, next) => {
+  if (req.originalUrl === "/api/stripe/webhook") {
+    next();
+  } else {
+    express.json()(req, res, next);
+  }
+});
 
 app.use(cors());
 

@@ -1,4 +1,5 @@
 import { Router } from "express";
+import chatRoutes from "../modules/chat/chat.routes";
 import driverRoutes from "../modules/driver/driver.routes";
 import rideRoutes from "../modules/ride/ride.routes";
 import stripeRoutes from "../modules/stripe/stripe.routes";
@@ -14,5 +15,6 @@ router.use("/users", userRoutes);
 router.use("/rides", rideRoutes);
 router.use("/drivers", driverRoutes);
 router.use("/stripe", stripeRoutes);
+router.use("/chat", chatRoutes);
 
 export default router;
