@@ -12,18 +12,18 @@ export const createUser = async (req: Request, res: Response) => {
   }
 };
 
-export const getUserByClerkId = async (req: Request, res: Response) => {
-  try {
-    const clerk_id = req.params.clerk_id;
-    const user = await userService.getUserByClerkId(clerk_id);
-    if (!user) {
-      return res.status(404).json({ error: "User not found" });
-    }
-    res.json({ data: user, message: "User retrieved successfully" });
-  } catch (err: any) {
-    res.status(err.statusCode || 500).json({ error: err.message });
-  }
-};
+// export const getUserByClerkId = async (req: Request, res: Response) => {
+//   try {
+//     const clerk_id = req.params.clerk_id;
+//     const user = await userService.getUserByClerkId(clerk_id);
+//     if (!user) {
+//       return res.status(404).json({ error: "User not found" });
+//     }
+//     res.json({ data: user, message: "User retrieved successfully" });
+//   } catch (err: any) {
+//     res.status(err.statusCode || 500).json({ error: err.message });
+//   }
+// };
 
 export const updateUser = async (req: Request, res: Response) => {
   try {

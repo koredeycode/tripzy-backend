@@ -16,7 +16,7 @@ export interface Ride {
   fare_price: number;
   payment_status: string;
   driver_id: number;
-  user_id: number;
+  user_id: string;
   created_at: string;
   driver?: object;
 }
