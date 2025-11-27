@@ -2,6 +2,7 @@ import cors from "cors";
 import dotenv from "dotenv";
 import express from "express";
 import { errorHandler } from "./middlewares/error.middleware";
+import { requestLogger } from "./middlewares/logger.middleware";
 import router from "./routes";
 
 dotenv.config();
@@ -18,6 +19,7 @@ app.use((req, res, next) => {
 });
 
 app.use(cors());
+app.use(requestLogger);
 
 // Main router
 app.use("/api", router);
