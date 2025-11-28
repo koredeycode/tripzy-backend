@@ -5,18 +5,19 @@ export interface Conversation {
   id: string;
   user_id: string;
   driver_id: string;
-  last_message_at: string;
-  last_message_preview: string;
-  user_unread_count: number;
-  driver_unread_count: number;
-  created_at: string;
+  last_message: string;
+  last_message_timestamp: string;
   driver?: {
+    id: string;
     first_name: string;
     last_name: string;
     profile_image_url: string;
   };
   user?: {
-    name: string;
+    id: string;
+    first_name: string;
+    last_name: string;
+    profile_image_url: string;
   };
 }
 
@@ -25,11 +26,18 @@ export interface Message {
   conversation_id: string;
   sender_type: "user" | "driver";
   sender_id: string;
-  message_text: string;
+  text: string;
   image_url?: string;
-  message_type: "text" | "image";
-  is_read: boolean;
   created_at: string;
+  read_at?: string;
+}
+
+export interface SendMessageDto {
+  conversationId: string;
+  senderType: "user" | "driver";
+  senderId: string;
+  messageText: string;
+  imageUrl?: string;
 }
 
 export const createOrGetConversation = async (
@@ -41,7 +49,10 @@ export const createOrGetConversation = async (
      VALUES ($1, $2)
      ON CONFLICT (user_id, driver_id) DO UPDATE 
         SET last_message_at = CURRENT_TIMESTAMP
-     RETURNING *`,
+     RETURNING 
+        id, user_id, driver_id, 
+        last_message_preview as last_message, 
+        last_message_at as last_message_timestamp`,
     [userId, driverId]
   );
   return result.rows[0] as Conversation;
@@ -69,7 +80,9 @@ export const sendMessage = async (
         ) VALUES (
             $1, $2, $3, $4, $5, $6
         )
-        RETURNING *
+        RETURNING 
+            id, conversation_id, sender_type, sender_id, 
+            message_text as text, image_url, created_at
     ),
     updated_conversation AS (
         UPDATE conversations c
@@ -93,34 +106,43 @@ export const sendMessage = async (
 export const getUserConversations = async (userId: string): Promise<Conversation[]> => {
   const result = await query(
     `SELECT 
-        c.*,
-        d.first_name,
-        d.last_name,
-        d.profile_image_url
+        c.id,
+        c.user_id,
+        c.driver_id,
+        c.last_message_preview as last_message,
+        c.last_message_at as last_message_timestamp,
+        json_build_object(
+            'id', d.id,
+            'first_name', u.first_name,
+            'last_name', u.last_name,
+            'profile_image_url', u.profile_image_url
+        ) as driver
     FROM conversations c
     JOIN drivers d ON d.id = c.driver_id
+    JOIN users u ON u.id = d.user_id
     WHERE c.user_id = $1
     ORDER BY c.last_message_at DESC NULLS LAST
     LIMIT 50`,
     [userId]
   );
   
-  // Map to match interface structure
-  return result.rows.map((row) => ({
-    ...row,
-    driver: {
-        first_name: row.first_name,
-        last_name: row.last_name,
-        profile_image_url: row.profile_image_url
-    }
-  })) as Conversation[];
+  return result.rows as Conversation[];
 };
 
 export const getDriverConversations = async (driverId: string): Promise<Conversation[]> => {
   const result = await query(
     `SELECT 
-        c.*,
-        u.first_name || ' ' || u.last_name as user_name
+        c.id,
+        c.user_id,
+        c.driver_id,
+        c.last_message_preview as last_message,
+        c.last_message_at as last_message_timestamp,
+        json_build_object(
+            'id', u.id,
+            'first_name', u.first_name,
+            'last_name', u.last_name,
+            'profile_image_url', u.profile_image_url
+        ) as user
     FROM conversations c
     JOIN users u ON u.id = c.user_id
     WHERE c.driver_id = $1
@@ -128,17 +150,14 @@ export const getDriverConversations = async (driverId: string): Promise<Conversa
     [driverId]
   );
 
-  return result.rows.map((row) => ({
-    ...row,
-    user: {
-        name: row.user_name
-    }
-  })) as Conversation[];
+  return result.rows as Conversation[];
 };
 
 export const getMessages = async (conversationId: string): Promise<Message[]> => {
   const result = await query(
-    `SELECT *
+    `SELECT 
+        id, conversation_id, sender_type, sender_id, 
+        message_text as text, image_url, created_at
     FROM messages
     WHERE conversation_id = $1
     ORDER BY created_at ASC`,
