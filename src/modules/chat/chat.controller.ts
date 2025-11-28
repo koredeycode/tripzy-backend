@@ -14,7 +14,10 @@ export const createConversation = async (
       throw new AppError("userId and driverId are required", 400);
     }
 
-    const conversation = await chatService.createOrGetConversation(userId, driverId);
+    const conversation = await chatService.createOrGetConversation(
+      userId,
+      driverId
+    );
     res.status(200).json(conversation);
   } catch (error) {
     next(error);
@@ -27,19 +30,25 @@ export const sendMessage = async (
   next: NextFunction
 ) => {
   try {
-    const { conversationId, senderType, senderId, messageText, imageUrl } = req.body;
-    if (!conversationId || !senderType || !senderId || !messageText) {
+    const { conversationId, senderType, messageText, imageUrl } = req.body;
+
+    // @ts-ignore
+    const { userId, isDriver } = req.user;
+
+    if (!conversationId || !senderType || !messageText) {
       throw new AppError("Missing required fields", 400);
     }
 
     const message = await chatService.sendMessage(
       conversationId,
       senderType,
-      senderId,
+      userId,
       messageText,
       imageUrl
     );
-    res.status(201).json(message);
+    res
+      .status(201)
+      .json({ message: "Message sent successfully", data: message });
   } catch (error) {
     next(error);
   }
@@ -51,16 +60,22 @@ export const getConversations = async (
   next: NextFunction
 ) => {
   try {
-    const { userId, driverId } = req.query;
-    
-    if (userId) {
-        const conversations = await chatService.getUserConversations(userId as string);
-        res.status(200).json(conversations);
-    } else if (driverId) {
-        const conversations = await chatService.getDriverConversations(driverId as string);
-        res.status(200).json(conversations);
+    // @ts-ignore
+    const { userId, isDriver } = req.user;
+
+    if (isDriver) {
+      const conversations = await chatService.getDriverConversations(userId);
+      res.status(200).json({
+        data: conversations,
+        message: "Conversations retrieved successfully",
+      });
     } else {
-        throw new AppError("userId or driverId query param required", 400);
+      const conversations = await chatService.getUserConversations(userId);
+      console.log({ conversations });
+      res.status(200).json({
+        data: conversations,
+        message: "Conversations retrieved successfully",
+      });
     }
   } catch (error) {
     next(error);
@@ -75,7 +90,9 @@ export const getMessages = async (
   try {
     const { conversationId } = req.params;
     const messages = await chatService.getMessages(conversationId);
-    res.status(200).json(messages);
+    res
+      .status(200)
+      .json({ data: messages, message: "Messages retrieved successfully" });
   } catch (error) {
     next(error);
   }
@@ -89,7 +106,7 @@ export const markAsRead = async (
   try {
     const { conversationId, readerType } = req.body;
     if (!conversationId || !readerType) {
-        throw new AppError("conversationId and readerType are required", 400);
+      throw new AppError("conversationId and readerType are required", 400);
     }
     await chatService.markMessagesAsRead(conversationId, readerType);
     res.status(200).json({ success: true });
@@ -99,15 +116,15 @@ export const markAsRead = async (
 };
 
 export const getUnreadCount = async (
-    req: Request,
-    res: Response,
-    next: NextFunction
+  req: Request,
+  res: Response,
+  next: NextFunction
 ) => {
-    try {
-        const { userId } = req.params;
-        const count = await chatService.getUserUnreadCount(userId);
-        res.status(200).json({ count });
-    } catch (error) {
-        next(error);
-    }
+  try {
+    const { userId } = req.params;
+    const count = await chatService.getUserUnreadCount(userId);
+    res.status(200).json({ count });
+  } catch (error) {
+    next(error);
+  }
 };

@@ -1,5 +1,8 @@
 import { Router } from "express";
+import { authenticateToken } from "../../middleware/authMiddleware";
+import { validateResource } from "../../middleware/validateResource";
 import * as chatController from "./chat.controller";
+import { sendMessageSchema } from "./chat.schema";
 
 const router = Router();
 
@@ -36,7 +39,7 @@ const router = Router();
  *       400:
  *         description: Missing required fields
  */
-router.post("/conversations", chatController.createConversation);
+router.post("/conversations", authenticateToken, chatController.createConversation);
 
 /**
  * @swagger
@@ -44,24 +47,15 @@ router.post("/conversations", chatController.createConversation);
  *   get:
  *     summary: Get conversations for a user or driver
  *     tags: [Chat]
- *     parameters:
- *       - in: query
- *         name: userId
- *         schema:
- *           type: string
- *         description: User ID to fetch conversations for
- *       - in: query
- *         name: driverId
- *         schema:
- *           type: string
- *         description: Driver ID to fetch conversations for
+ *     security:
+ *       - bearerAuth: []
  *     responses:
  *       200:
  *         description: List of conversations
  *       400:
  *         description: userId or driverId query param required
  */
-router.get("/conversations", chatController.getConversations);
+router.get("/conversations", authenticateToken, chatController.getConversations);
 
 /**
  * @swagger
@@ -69,6 +63,8 @@ router.get("/conversations", chatController.getConversations);
  *   post:
  *     summary: Send a message
  *     tags: [Chat]
+ *     security:
+ *       - bearerAuth: []
  *     requestBody:
  *       required: true
  *       content:
@@ -98,7 +94,12 @@ router.get("/conversations", chatController.getConversations);
  *       400:
  *         description: Missing required fields
  */
-router.post("/messages", chatController.sendMessage);
+router.post(
+  "/messages",
+  authenticateToken,
+  validateResource(sendMessageSchema),
+  chatController.sendMessage
+);
 
 /**
  * @swagger
@@ -106,6 +107,8 @@ router.post("/messages", chatController.sendMessage);
  *   get:
  *     summary: Get messages for a conversation
  *     tags: [Chat]
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: conversationId
@@ -117,7 +120,7 @@ router.post("/messages", chatController.sendMessage);
  *       200:
  *         description: List of messages
  */
-router.get("/messages/:conversationId", chatController.getMessages);
+router.get("/messages/:conversationId", authenticateToken, chatController.getMessages);
 
 /**
  * @swagger
@@ -125,6 +128,8 @@ router.get("/messages/:conversationId", chatController.getMessages);
  *   post:
  *     summary: Mark messages as read
  *     tags: [Chat]
+ *     security:
+ *       - bearerAuth: []
  *     requestBody:
  *       required: true
  *       content:
@@ -146,7 +151,7 @@ router.get("/messages/:conversationId", chatController.getMessages);
  *       400:
  *         description: Missing required fields
  */
-router.post("/read", chatController.markAsRead);
+router.post("/read", authenticateToken, chatController.markAsRead);
 
 /**
  * @swagger
@@ -154,6 +159,8 @@ router.post("/read", chatController.markAsRead);
  *   get:
  *     summary: Get unread message count for a user
  *     tags: [Chat]
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: userId
@@ -165,6 +172,6 @@ router.post("/read", chatController.markAsRead);
  *       200:
  *         description: Unread message count
  */
-router.get("/unread/:userId", chatController.getUnreadCount);
+router.get("/unread/:userId", authenticateToken, chatController.getUnreadCount);
 
 export default router;
