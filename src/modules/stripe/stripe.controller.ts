@@ -79,10 +79,7 @@ export const handleWebhook = async (req: Request, res: Response) => {
 
         console.log("Ride created:", ride.ride_id);
 
-        const conversation = await createOrGetConversation(
-          user_id,
-          driver_id
-        );
+        const conversation = await createOrGetConversation(user_id, driver_id);
 
         console.log("Conversation created:", conversation.id);
       } catch (error) {

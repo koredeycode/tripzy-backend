@@ -1,7 +1,7 @@
 import { query } from "../../db";
-import { addEmailJob } from '../../jobs/queues/email.queue';
+import { addEmailJob } from "../../jobs/queues/email.queue";
 import { AppError } from "../../middlewares/error.middleware";
-import { getRideBookingEmail } from '../../utils/emailTemplates';
+import { getRideBookingEmail } from "../../utils/emailTemplates";
 
 export interface Ride {
   ride_id: string;
@@ -70,14 +70,21 @@ export const createRide = async (data: Partial<Ride>): Promise<Ride> => {
     const ride = result.rows[0] as Ride;
 
     // Fetch user email to send notification
-    const userRes = await query('SELECT email, first_name FROM users WHERE id = $1', [user_id]);
+    const userRes = await query(
+      "SELECT email, first_name FROM users WHERE id = $1",
+      [user_id]
+    );
     if (userRes.rows.length > 0) {
       const user = userRes.rows[0];
-      await addEmailJob('ride_booking', {
+      await addEmailJob("ride_booking", {
         to: user.email,
-        subject: 'Ride Booked!',
+        subject: "Ride Booked!",
         text: `Hi ${user.first_name}, your ride from ${origin_address} to ${destination_address} has been booked.`,
-        html: getRideBookingEmail(user.first_name, origin_address || '', destination_address || ''),
+        html: getRideBookingEmail(
+          user.first_name,
+          origin_address || "",
+          destination_address || ""
+        ),
       });
     }
 
@@ -107,8 +114,8 @@ export const getRide = async (id: string): Promise<Ride> => {
         rides.created_at,
         json_build_object(
           'driver_id', drivers.id,
-          'first_name', drivers.first_name,
-          'last_name', drivers.last_name,
+          'first_name', users.first_name,
+          'last_name', users.last_name,
           'profile_image_url', users.profile_image_url,
           'car_image_url', drivers.car_image_url,
           'car_seats', drivers.car_seats,
@@ -130,3 +137,7 @@ export const getRide = async (id: string): Promise<Ride> => {
     throw new AppError("Failed to fetch ride", 500);
   }
 };
+
+// 'first_name', drivers.first_name,
+//           'last_name', drivers.last_name,
+//           'profile_image_url', users.profile_image_url,

@@ -69,19 +69,26 @@ export const getUserRides = async (userId: string): Promise<Ride[]> => {
       rides.created_at,
       json_build_object(
         'driver_id', drivers.id,
-        'first_name', drivers.first_name,
-        'last_name', drivers.last_name,
-        'profile_image_url', drivers.profile_image_url,
+        'first_name', users.first_name,
+        'last_name', users.last_name,
+        'profile_image_url', users.profile_image_url,
         'car_image_url', drivers.car_image_url,
         'car_seats', drivers.car_seats,
         'rating', drivers.rating
       ) AS driver
     FROM rides
     INNER JOIN drivers ON rides.driver_id = drivers.id
+    INNER JOIN users ON drivers.user_id = users.id
     WHERE rides.user_id = $1
     ORDER BY rides.created_at DESC`,
     [userId]
   );
 
+  console.log("Rides retrieved for user:", result.rows);
+
   return result.rows as Ride[];
 };
+
+// 'first_name', drivers.first_name,
+//         'last_name', drivers.last_name,
+//         'profile_image_url', drivers.profile_image_url,

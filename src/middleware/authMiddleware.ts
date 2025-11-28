@@ -1,7 +1,7 @@
-import { NextFunction, Request, Response } from 'express';
-import jwt from 'jsonwebtoken';
-import { env } from '../config/env';
-import { getRide } from '../modules/ride/ride.service';
+import { NextFunction, Request, Response } from "express";
+import jwt from "jsonwebtoken";
+import { env } from "../config/env";
+import { getRide } from "../modules/ride/ride.service";
 
 export interface AuthRequest extends Request {
   user?: {
@@ -11,40 +11,59 @@ export interface AuthRequest extends Request {
   };
 }
 
-export const authenticateToken = (req: AuthRequest, res: Response, next: NextFunction) => {
-  const authHeader = req.headers['authorization'];
-  const token = authHeader && authHeader.split(' ')[1];
+export const authenticateToken = (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction
+) => {
+  const authHeader = req.headers["authorization"];
+  const token = authHeader && authHeader.split(" ")[1];
 
   if (!token) {
-    return res.status(401).json({ error: 'Access denied. No token provided.' });
+    return res.status(401).json({ error: "Access denied. No token provided." });
   }
 
   try {
-    const decoded = jwt.verify(token, env.JWT_SECRET || 'your_jwt_secret') as { userId: string; role?: string; isDriver?: boolean };
+    const decoded = jwt.verify(token, env.JWT_SECRET || "your_jwt_secret") as {
+      userId: string;
+      role?: string;
+      isDriver?: boolean;
+    };
     req.user = decoded;
+    console.log({ decoded });
     next();
   } catch (error) {
-    res.status(403).json({ error: 'Invalid token.' });
+    res.status(403).json({ error: "Invalid token." });
   }
 };
 
-export const authorizeUser = (req: AuthRequest, res: Response, next: NextFunction) => {
+export const authorizeUser = (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction
+) => {
   const userId = req.user?.userId;
   const paramId = req.params.id;
 
   if (userId !== paramId) {
-    return res.status(403).json({ error: 'Unauthorized access to user profile' });
+    return res
+      .status(403)
+      .json({ error: "Unauthorized access to user profile" });
   }
   next();
 };
 
-export const authorizeRideAccess = async (req: AuthRequest, res: Response, next: NextFunction) => {
+export const authorizeRideAccess = async (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction
+) => {
   try {
     const userId = req.user?.userId;
     const rideId = req.params.id;
 
     if (!userId) {
-      return res.status(401).json({ error: 'Unauthorized' });
+      return res.status(401).json({ error: "Unauthorized" });
     }
 
     const ride = await getRide(rideId);
@@ -56,8 +75,10 @@ export const authorizeRideAccess = async (req: AuthRequest, res: Response, next:
 
     // TODO: Check if user is the driver of the ride
     // For now, restrict to rider as per previous implementation
-    
-    return res.status(403).json({ error: 'Unauthorized access to ride details' });
+
+    return res
+      .status(403)
+      .json({ error: "Unauthorized access to ride details" });
   } catch (error) {
     next(error);
   }
