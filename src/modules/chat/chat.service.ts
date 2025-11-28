@@ -88,7 +88,7 @@ export const sendMessage = async (
         UPDATE conversations c
         SET 
             last_message_at = CURRENT_TIMESTAMP,
-            last_message_preview = (SELECT SUBSTRING(message_text FROM 1 FOR 100) FROM new_message),
+            last_message_preview = (SELECT SUBSTRING(text FROM 1 FOR 100) FROM new_message),
             user_unread_count = CASE WHEN (SELECT sender_type FROM new_message) = 'driver' 
                                     THEN user_unread_count + 1 ELSE user_unread_count END,
             driver_unread_count = CASE WHEN (SELECT sender_type FROM new_message) = 'user' 
